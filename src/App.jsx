@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 import TodoForm from "./components/TodoForm";
 import { Todos } from "./components/Todos";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+console.log(BASE_URL);
+
 const App = () => {
   const [todos, setTodos] = useState([]);
 
   const getTodos = async () => {
-    const response = await fetch("http://localhost:5000/todos");
+    const response = await fetch(`${BASE_URL}/todos`);
     const todos = await response.json();
     setTodos(todos);
   };
@@ -16,7 +19,7 @@ const App = () => {
   }, []);
 
   const addTodo = async (title) => {
-    const response = await fetch("http://localhost:5000/todos", {
+    const response = await fetch(`${BASE_URL}/todos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),
@@ -26,7 +29,7 @@ const App = () => {
   };
 
   const removeTodo = async (id) => {
-    const response = await fetch(`http://localhost:5000/todos/${id}`, {
+    const response = await fetch(`${BASE_URL}/todos/${id}`, {
       method: "DELETE",
     });
     if (response.status !== 200) {
@@ -36,7 +39,7 @@ const App = () => {
   };
 
   const updateTodo = async (id) => {
-    const response = await fetch(`http://localhost:5000/todos/${id}`, {
+    const response = await fetch(`${BASE_URL}/todos/${id}`, {
       method: "PUT",
     });
     if (response.status !== 200) {
