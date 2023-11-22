@@ -1,22 +1,34 @@
 import { useEffect, useState } from "react";
+import TodoFooter from "./components/TodoFooter";
 import TodoForm from "./components/TodoForm";
-import { Todos } from "./components/Todos";
+import Todos from "./components/Todos";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-console.log(BASE_URL);
 
 const App = () => {
   const [todos, setTodos] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [next, setNext] = useState(null);
+  const [previous, setPrevious] = useState(null);
+  const [order, setOrder] = useState("asc");
 
-  const getTodos = async () => {
-    const response = await fetch(`${BASE_URL}/todos`);
-    const todos = await response.json();
-    setTodos(todos);
+  const getTodos = async (page = 1, order = "asc", limit = 5) => {
+    const response = await fetch(
+      `${BASE_URL}/todos?page=${page}&limit=${limit}&order=${order}`
+    );
+
+    const { results, total_pages, next, previous } = await response.json();
+
+    setTodos(results);
+    setTotalPages(total_pages);
+    setNext(next);
+    setPrevious(previous);
   };
 
   useEffect(() => {
-    getTodos();
-  }, []);
+    getTodos(page, order);
+  }, [page, order]);
 
   const addTodo = async (title) => {
     const response = await fetch(`${BASE_URL}/todos`, {
@@ -24,8 +36,11 @@ const App = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title }),
     });
-    const todo = await response.json();
-    setTodos([...todos, todo]);
+    console.log({
+      response,
+    });
+    await response.json();
+    await getTodos();
   };
 
   const removeTodo = async (id) => {
@@ -35,7 +50,7 @@ const App = () => {
     if (response.status !== 200) {
       return alert("Something went wrong");
     }
-    setTodos(todos.filter((todo) => todo.id !== id));
+    await getTodos();
   };
 
   const updateTodo = async (id) => {
@@ -45,14 +60,7 @@ const App = () => {
     if (response.status !== 200) {
       return alert("Something went wrong");
     }
-    setTodos(
-      todos.map((todo) => {
-        if (todo.id === id) {
-          todo.done = !todo.done;
-        }
-        return todo;
-      })
-    );
+    await getTodos();
   };
 
   return (
@@ -63,6 +71,15 @@ const App = () => {
         todos={todos}
         removeTodo={removeTodo}
         updateTodo={updateTodo}
+      />
+      <TodoFooter
+        page={page}
+        setPage={setPage}
+        totalPages={totalPages}
+        next={next}
+        previous={previous}
+        order={order}
+        setOrder={setOrder}
       />
     </div>
   );
